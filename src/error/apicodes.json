@@ -1,0 +1,10 @@
+{
+  "success": 200,
+  "badInput": 400,
+  "unauthorized": 401,
+  "notFound": 404,
+  "notAllowed": 405,
+  "alreadyExists": 409,
+  "unprocessable": 422,
+  "serverError": 500
+}

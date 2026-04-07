@@ -1,0 +1,17 @@
+{
+  "errors": {
+    "generic": {
+      "badInput": "invalid input received",
+      "serverError": "An unexpected error occurred. Please try later",
+      "notFound": "Resource not found",
+      "unauthorized": "Unauthorized request",
+      "notAllowed": "Method not allowed",
+      "alreadyExists": "Resource already exists",
+      "unprocessable": "Unable to process request with data available in server",
+      "siteIssuesNotFound": "The diagnostic report you're trying to access is no longer available. The link may have expired, or the issues were resolved."
+    }
+  },
+  "success": {
+    "generic": "Success"
+  }
+}

@@ -1,0 +1,727 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Cookieyes Microservice - Site Diagnostics API",
+    "description": "APIs for cookieyes site diagnostics api",
+    "termsOfService": "https://www.cookieyes.com",
+    "contact": {
+      "name": "Cookieyes",
+      "url": "https://www.cookieyes.com",
+      "email": "info@cookieyes.com"
+    },
+    "license": {
+      "name": "UNLICENSED"
+    },
+    "version": "0.0.1"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:{port}/api/v1",
+      "description": "Development server",
+      "variables": {
+        "port": {
+          "default": "3000"
+        }
+      }
+    },
+    {
+      "url": "https://data-api.cookieyes.com/api/v1",
+      "description": "Prod server"
+    }
+  ],
+  "paths": {
+    "/status": {
+      "summary": "Get API status",
+      "get": {
+        "tags": ["health"],
+        "summary": "Get API status",
+        "description": "Health check for API.",
+        "operationId": "getStatus",
+        "responses": {
+          "200": {
+            "description": "Metdata about the API status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIResponse"
+                },
+                "example": {
+                  "status": 200,
+                  "message": "Success"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports": {
+      "summary": "Fetch report data for cookieyes",
+      "get": {
+        "tags": ["reports"],
+        "summary": "Fetch the reports for all sites",
+        "description": "Fetch the data regarding status of all websites",
+        "operationId": "reports",
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIResponse"
+                },
+                "example": {
+                  "status": 200,
+                  "message": "Success",
+                  "data": {
+                    "$ref": "#/components/schemas/Report"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request rejected due to invalid credentials"
+          },
+          "500": {
+            "description": "Request rejected due to un expected error in the server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "message": "An unexpected error occurred. Please try later."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    },
+    "schemas": {
+      "APIResponse": {
+        "type": "object",
+        "description": "The response for an API request",
+        "required": ["status", "message"],
+        "properties": {
+          "status": {
+            "type": "integer",
+            "description": "The response code for the operation"
+          },
+          "message": {
+            "type": "string",
+            "description": "The response message for the operation"
+          }
+        }
+      },
+      "Report": {
+        "type": "object",
+        "description": "The response for an API request",
+        "required": ["date", "total", "app", "wordpress", "shopify", "agency"],
+        "properties": {
+          "status": {
+            "type": "number",
+            "example": "200"
+          },
+          "message": {
+            "type": "string",
+            "example": "Success"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "date": {
+                "type": "string",
+                "format": "date",
+                "example": "2024-03-15"
+              },
+              "total": {
+                "type": "object",
+                "properties": {
+                  "consolidated": {
+                    "type": "object",
+                    "properties": {
+                      "websites": {
+                        "type": "number",
+                        "example": "370899"
+                      },
+                      "accounts": {
+                        "type": "number",
+                        "example": "290894"
+                      },
+                      "active": {
+                        "type": "number",
+                        "example": "185492"
+                      },
+                      "trialConverted": {
+                        "type": "number",
+                        "example": "7195"
+                      },
+                      "mrr": {
+                        "type": "number",
+                        "example": "228553.88"
+                      }
+                    }
+                  },
+                  "plans": {
+                    "type": "object",
+                    "properties": {
+                      "free": {
+                        "type": "number",
+                        "example": "347254"
+                      },
+                      "plan_F": {
+                        "type": "number",
+                        "example": "15"
+                      },
+                      "basic-monthly": {
+                        "type": "number",
+                        "example": "4248"
+                      },
+                      "basic-yearly": {
+                        "type": "number",
+                        "example": "4079"
+                      },
+                      "plan_P": {
+                        "type": "number",
+                        "example": "3"
+                      },
+                      "ultimate-yearly": {
+                        "type": "number",
+                        "example": "1059"
+                      },
+                      "pro-monthly": {
+                        "type": "number",
+                        "example": "3052"
+                      },
+                      "pro-yearly": {
+                        "type": "number",
+                        "example": "2542"
+                      },
+                      "ultimate-monthly": {
+                        "type": "number",
+                        "example": "1184"
+                      },
+                      "cookieyes_tier4": {
+                        "type": "number",
+                        "example": "216"
+                      },
+                      "cookieyes_tier2": {
+                        "type": "number",
+                        "example": "165"
+                      },
+                      "cookieyes_tier3": {
+                        "type": "number",
+                        "example": "125"
+                      },
+                      "cookieyes_tier1": {
+                        "type": "number",
+                        "example": "254"
+                      },
+                      "agency-yearly": {
+                        "type": "number",
+                        "example": "2231"
+                      },
+                      "custom": {
+                        "type": "number",
+                        "example": "5"
+                      },
+                      "agency-pro-monthly": {
+                        "type": "number",
+                        "example": "288"
+                      },
+                      "agency-ultimate-monthly": {
+                        "type": "number",
+                        "example": "36"
+                      }
+                    }
+                  },
+                  "inTrial": {
+                    "type": "object",
+                    "properties": {
+                      "basic-monthly": {
+                        "type": "number",
+                        "example": "1683"
+                      },
+                      "basic-yearly": {
+                        "type": "number",
+                        "example": "90"
+                      },
+                      "ultimate-yearly": {
+                        "type": "number",
+                        "example": "13"
+                      },
+                      "pro-monthly": {
+                        "type": "number",
+                        "example": "666"
+                      },
+                      "pro-yearly": {
+                        "type": "number",
+                        "example": "61"
+                      },
+                      "ultimate-monthly": {
+                        "type": "number",
+                        "example": "64"
+                      }
+                    }
+                  },
+                  "trialConverted": {
+                    "type": "object",
+                    "properties": {
+                      "basic-monthly": {
+                        "type": "number",
+                        "example": "2059"
+                      },
+                      "basic-yearly": {
+                        "type": "number",
+                        "example": "1629"
+                      },
+                      "ultimate-yearly": {
+                        "type": "number",
+                        "example": "476"
+                      },
+                      "pro-monthly": {
+                        "type": "number",
+                        "example": "1394"
+                      },
+                      "pro-yearly": {
+                        "type": "number",
+                        "example": "1058"
+                      },
+                      "ultimate-monthly": {
+                        "type": "number",
+                        "example": "575"
+                      },
+                      "custom": {
+                        "type": "number",
+                        "example": "4"
+                      }
+                    }
+                  },
+                  "trialEnded": {
+                    "type": "object",
+                    "properties": {
+                      "basic-monthly": {
+                        "type": "number",
+                        "example": "578"
+                      },
+                      "basic-yearly": {
+                        "type": "number",
+                        "example": "92"
+                      },
+                      "ultimate-yearly": {
+                        "type": "number",
+                        "example": "14"
+                      },
+                      "pro-monthly": {
+                        "type": "number",
+                        "example": "209"
+                      },
+                      "pro-yearly": {
+                        "type": "number",
+                        "example": "55"
+                      },
+                      "ultimate-monthly": {
+                        "type": "number",
+                        "example": "63"
+                      }
+                    }
+                  }
+                }
+              },
+              "app": {
+                "type": "object",
+                "properties": {
+                  "consolidated": {
+                    "type": "object",
+                    "properties": {
+                      "websites": {
+                        "type": "number",
+                        "example": "131936"
+                      },
+                      "accounts": {
+                        "type": "number",
+                        "example": "122250"
+                      },
+                      "active": {
+                        "type": "number",
+                        "example": "46644"
+                      },
+                      "trialConverted": {
+                        "type": "number",
+                        "example": "7092"
+                      },
+                      "mrr": {
+                        "type": "number",
+                        "example": "194034.72"
+                      }
+                    }
+                  },
+                  "plans": {
+                    "type": "object",
+                    "properties": {
+                      "free": {
+                        "type": "number",
+                        "example": "111204"
+                      },
+                      "plan_F": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "basic-monthly": {
+                        "type": "number",
+                        "example": "3571"
+                      },
+                      "basic-yearly": {
+                        "type": "number",
+                        "example": "3352"
+                      },
+                      "plan_P": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "ultimate-yearly": {
+                        "type": "number",
+                        "example": "946"
+                      },
+                      "pro-monthly": {
+                        "type": "number",
+                        "example": "2449"
+                      },
+                      "pro-yearly": {
+                        "type": "number",
+                        "example": "2069"
+                      },
+                      "ultimate-monthly": {
+                        "type": "number",
+                        "example": "1014"
+                      },
+                      "cookieyes_tier4": {
+                        "type": "number",
+                        "example": "216"
+                      },
+                      "cookieyes_tier2": {
+                        "type": "number",
+                        "example": "165"
+                      },
+                      "cookieyes_tier3": {
+                        "type": "number",
+                        "example": "125"
+                      },
+                      "cookieyes_tier1": {
+                        "type": "number",
+                        "example": "254"
+                      },
+                      "agency-yearly": {
+                        "type": "number",
+                        "example": "2231"
+                      },
+                      "custom": {
+                        "type": "number",
+                        "example": "5"
+                      },
+                      "agency-pro-monthly": {
+                        "type": "number",
+                        "example": "288"
+                      },
+                      "agency-ultimate-monthly": {
+                        "type": "number",
+                        "example": "36"
+                      }
+                    }
+                  }
+                }
+              },
+              "wordpress": {
+                "type": "object",
+                "properties": {
+                  "consolidated": {
+                    "type": "object",
+                    "properties": {
+                      "websites": {
+                        "type": "number",
+                        "example": "237957"
+                      },
+                      "accounts": {
+                        "type": "number",
+                        "example": "173777"
+                      },
+                      "active": {
+                        "type": "number",
+                        "example": "138069"
+                      },
+                      "trialConverted": {
+                        "type": "number",
+                        "example": "103"
+                      },
+                      "mrr": {
+                        "type": "number",
+                        "example": "31745.39"
+                      }
+                    }
+                  },
+                  "plans": {
+                    "type": "object",
+                    "properties": {
+                      "free": {
+                        "type": "number",
+                        "example": "235214"
+                      },
+                      "plan_F": {
+                        "type": "number",
+                        "example": "15"
+                      },
+                      "basic-monthly": {
+                        "type": "number",
+                        "example": "644"
+                      },
+                      "basic-yearly": {
+                        "type": "number",
+                        "example": "710"
+                      },
+                      "plan_P": {
+                        "type": "number",
+                        "example": "3"
+                      },
+                      "ultimate-yearly": {
+                        "type": "number",
+                        "example": "109"
+                      },
+                      "pro-monthly": {
+                        "type": "number",
+                        "example": "527"
+                      },
+                      "pro-yearly": {
+                        "type": "number",
+                        "example": "466"
+                      },
+                      "ultimate-monthly": {
+                        "type": "number",
+                        "example": "139"
+                      },
+                      "cookieyes_tier4": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "cookieyes_tier2": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "cookieyes_tier3": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "cookieyes_tier1": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "agency-yearly": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "custom": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "agency-pro-monthly": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "agency-ultimate-monthly": {
+                        "type": "number",
+                        "example": "0"
+                      }
+                    }
+                  }
+                }
+              },
+              "shopify": {
+                "type": "object",
+                "properties": {
+                  "consolidated": {
+                    "type": "object",
+                    "properties": {
+                      "websites": {
+                        "type": "number",
+                        "example": "1006"
+                      },
+                      "accounts": {
+                        "type": "number",
+                        "example": "892"
+                      },
+                      "active": {
+                        "type": "number",
+                        "example": "779"
+                      },
+                      "trialConverted": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "mrr": {
+                        "type": "number",
+                        "example": "2773.76"
+                      }
+                    }
+                  },
+                  "plans": {
+                    "type": "object",
+                    "properties": {
+                      "free": {
+                        "type": "number",
+                        "example": "836"
+                      },
+                      "plan_F": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "basic-monthly": {
+                        "type": "number",
+                        "example": "33"
+                      },
+                      "basic-yearly": {
+                        "type": "number",
+                        "example": "17"
+                      },
+                      "plan_P": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "ultimate-yearly": {
+                        "type": "number",
+                        "example": "4"
+                      },
+                      "pro-monthly": {
+                        "type": "number",
+                        "example": "76"
+                      },
+                      "pro-yearly": {
+                        "type": "number",
+                        "example": "7"
+                      },
+                      "ultimate-monthly": {
+                        "type": "number",
+                        "example": "31"
+                      },
+                      "cookieyes_tier4": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "cookieyes_tier2": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "cookieyes_tier3": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "cookieyes_tier1": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "agency-yearly": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "custom": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "agency-pro-monthly": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "agency-ultimate-monthly": {
+                        "type": "number",
+                        "example": "0"
+                      }
+                    }
+                  }
+                }
+              },
+              "agency": {
+                "type": "object",
+                "properties": {
+                  "consolidated": {
+                    "type": "object",
+                    "properties": {
+                      "websites": {
+                        "type": "number",
+                        "example": "2707"
+                      },
+                      "accounts": {
+                        "type": "number",
+                        "example": "195"
+                      },
+                      "active": {
+                        "type": "number",
+                        "example": "2463"
+                      },
+                      "trialConverted": {
+                        "type": "number",
+                        "example": "0"
+                      },
+                      "mrr": {
+                        "type": "number",
+                        "example": "16774.13"
+                      }
+                    }
+                  },
+                  "plans": {
+                    "type": "object",
+                    "properties": {
+                      "plan_F": {
+                        "type": "number",
+                        "example": "2"
+                      },
+                      "plan_P": {
+                        "type": "number",
+                        "example": "8"
+                      },
+                      "agency-yearly": {
+                        "type": "number",
+                        "example": "2231"
+                      },
+                      "agency-pro-monthly": {
+                        "type": "number",
+                        "example": "288"
+                      },
+                      "agency-ultimate-monthly": {
+                        "type": "number",
+                        "example": "36"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "health",
+      "description": "Get API status"
+    },
+    {
+      "name": "reports",
+      "description": "Get reports"
+    }
+  ]
+}
