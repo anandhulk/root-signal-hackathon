@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import { InvestigationRequest } from "../models";
 
 /**
@@ -11,11 +11,11 @@ export interface Session {
   /** Context provided when the investigation was created. */
   context: InvestigationRequest;
   /**
-   * Full message history in OpenAI format.
-   * Includes user, assistant, and tool messages so the AI has full context
+   * Full message history in Anthropic format.
+   * Includes user and assistant messages so the AI has full context
    * on follow-up turns.
    */
-  messages: OpenAI.ChatCompletionMessageParam[];
+  messages: Anthropic.MessageParam[];
   /** When this session was created. */
   createdAt: Date;
 }

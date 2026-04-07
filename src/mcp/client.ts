@@ -1,6 +1,6 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import { createServer as createAwsServer } from "../../mcp/aws/server";
 import { createServer as createBitbucketServer } from "../../mcp/bitbucket/server";
 import Logger from "../logger/app";
@@ -11,8 +11,8 @@ let _awsClient: Client | null = null;
 let _bitbucketClient: Client | null = null;
 /** Maps each tool name to the client that owns it (built on first init). */
 const _toolRouteMap = new Map<string, Client>();
-/** Cached OpenAI-format tool definitions. */
-let _cachedToolDefinitions: OpenAI.ChatCompletionTool[] | null = null;
+/** Cached Anthropic-format tool definitions. */
+let _cachedToolDefinitions: Anthropic.Tool[] | null = null;
 
 /**
  * Initialises and returns the AWS MCP client, connected in-process.
@@ -59,7 +59,7 @@ async function _getBitbucketClient(): Promise<Client> {
  * so no manual schema writing is required.
  * @returns {Promise<OpenAI.ChatCompletionTool[]>} The combined tool list.
  */
-export async function getMcpToolDefinitions(): Promise<OpenAI.ChatCompletionTool[]> {
+export async function getMcpToolDefinitions(): Promise<Anthropic.Tool[]> {
   if (_cachedToolDefinitions) return _cachedToolDefinitions;
 
   Logger.logDebug("McpClient: Fetching tool definitions from MCP servers");
@@ -69,30 +69,24 @@ export async function getMcpToolDefinitions(): Promise<OpenAI.ChatCompletionTool
     bbClient.listTools(),
   ]);
 
-  // Build routing map and convert to OpenAI format in a single pass
-  const definitions: OpenAI.ChatCompletionTool[] = [];
+  // Build routing map and convert to Anthropic format in a single pass
+  const definitions: Anthropic.Tool[] = [];
 
   for (const tool of awsResult.tools) {
     _toolRouteMap.set(tool.name, awsClient);
     definitions.push({
-      type: "function",
-      function: {
-        name: tool.name,
-        description: tool.description ?? "",
-        parameters: tool.inputSchema as Record<string, unknown>,
-      },
+      name: tool.name,
+      description: tool.description ?? "",
+      input_schema: tool.inputSchema as Anthropic.Tool["input_schema"],
     });
   }
 
   for (const tool of bbResult.tools) {
     _toolRouteMap.set(tool.name, bbClient);
     definitions.push({
-      type: "function",
-      function: {
-        name: tool.name,
-        description: tool.description ?? "",
-        parameters: tool.inputSchema as Record<string, unknown>,
-      },
+      name: tool.name,
+      description: tool.description ?? "",
+      input_schema: tool.inputSchema as Anthropic.Tool["input_schema"],
     });
   }
 
@@ -102,17 +96,34 @@ export async function getMcpToolDefinitions(): Promise<OpenAI.ChatCompletionTool
 }
 
 /**
+ * Result of an MCP tool execution.
+ */
+export interface McpToolResult {
+  /**
+   * The tool output as a string, always present.
+   * Passed to the AI as the tool message so it can reason about failures too.
+   */
+  result: string;
+  /**
+   * Set when the tool call failed. Contains the human-readable error message.
+   * Used by the AI service to emit the correct SSE status event.
+   */
+  error?: string;
+}
+
+/**
  * Executes an MCP tool by name, routing to the correct server.
- * Returns tool output as a string. Errors are caught and returned
- * as a string so the AI can reason about the failure.
+ * Always resolves (never rejects) so the AI can reason about failures.
+ * On success, `error` is undefined. On failure, `error` carries the message
+ * and `result` contains a descriptive string for the AI.
  * @param {string} name The tool name.
  * @param {Record<string, unknown>} args The tool arguments.
- * @returns {Promise<string>} The tool result or error description.
+ * @returns {Promise<McpToolResult>} The tool result and optional error.
  */
 export async function callMcpTool(
   name: string,
   args: Record<string, unknown>
-): Promise<string> {
+): Promise<McpToolResult> {
   Logger.logDebug(`McpClient: Calling tool "${name}"`);
   try {
     // Ensure routing map is initialised
@@ -122,20 +133,22 @@ export async function callMcpTool(
 
     const client = _toolRouteMap.get(name);
     if (!client) {
-      return `Tool "${name}" not found in any connected MCP server.`;
+      const error = `Tool "${name}" not found in any connected MCP server.`;
+      Logger.logDebug(`McpClient: ${error}`);
+      return { result: error, error };
     }
 
-    const result = await client.callTool({ name, arguments: args });
-    const textContent = (result.content as Array<{ type: string; text?: string }>)
+    const raw = await client.callTool({ name, arguments: args });
+    const textContent = (raw.content as Array<{ type: string; text?: string }>)
       .filter((c) => c.type === "text" && c.text !== undefined)
       .map((c) => c.text!)
       .join("\n");
 
     Logger.logDebug(`McpClient: Tool "${name}" completed`);
-    return textContent || "(no output)";
+    return { result: textContent || "(no output)" };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     Logger.logDebug(`McpClient: Tool "${name}" failed — ${message}`);
-    return `Tool error: ${message}`;
+    return { result: `Tool error: ${message}`, error: message };
   }
 }

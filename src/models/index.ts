@@ -110,15 +110,29 @@ export enum InvestigationMode {
 }
 
 /**
+ * Available deployment environments.
+ */
+export enum Environment {
+  Staging = "staging",
+}
+
+/**
+ * Available AWS regions.
+ */
+export enum AwsRegion {
+  EuWest1 = "eu-west-1",
+}
+
+/**
  * Filters applied when scoping an investigation.
  */
 export type InvestigationFilters = {
   /** Time window, e.g. "30m", "1h", "3h", "24h". */
   timeRange: string;
-  /** Environment label, e.g. "production", "staging". */
-  environment: string;
-  /** AWS region, e.g. "eu-west-1". */
-  region: string;
+  /** Environment label. */
+  environment: Environment;
+  /** AWS region. */
+  region: AwsRegion;
 };
 
 /**
@@ -177,6 +191,8 @@ export type SseToolCallEvent = {
   input?: Record<string, unknown>;
   /** Current status of the tool call. */
   status: ToolCallStatus;
+  /** Error message when status is ToolCallStatus.Error. */
+  error?: string;
 };
 
 /**

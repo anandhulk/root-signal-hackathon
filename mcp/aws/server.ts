@@ -1,5 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { registerCloudWatchTools, registerEcsTools } from "./tools/index.js";
+import {
+  registerCloudWatchTools,
+  registerEcsTools,
+  registerCodePipelineTools,
+} from "./tools/index.js";
 
 export function createServer(): McpServer {
   const server = new McpServer({
@@ -9,6 +13,7 @@ export function createServer(): McpServer {
 
   registerCloudWatchTools(server);
   registerEcsTools(server);
+  registerCodePipelineTools(server);
 
   return server;
 }

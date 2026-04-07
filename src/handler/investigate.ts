@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import Handler from ".";
 import Logger from "../logger/app";
 import { sessionStore } from "../session";
-import { InvestigationRequest, InvestigationMode } from "../models";
+import { InvestigationRequest, InvestigationMode, Environment, AwsRegion } from "../models";
 import AppError from "../error";
 import { APIErrors } from "../error/const";
 import APICodes from "../error/apicodes.json";
@@ -48,6 +48,22 @@ export default class InvestigateHandler implements Handler {
       if (!filters || !filters.timeRange || !filters.environment || !filters.region) {
         throw new AppError(
           "filters.timeRange, filters.environment, and filters.region are all required.",
+          APIErrors.APIBadInputError,
+          "InvestigateHandler.handler"
+        );
+      }
+
+      if (!Object.values(Environment).includes(filters.environment)) {
+        throw new AppError(
+          `Invalid environment "${filters.environment}". Must be one of: ${Object.values(Environment).join(", ")}.`,
+          APIErrors.APIBadInputError,
+          "InvestigateHandler.handler"
+        );
+      }
+
+      if (!Object.values(AwsRegion).includes(filters.region)) {
+        throw new AppError(
+          `Invalid region "${filters.region}". Must be one of: ${Object.values(AwsRegion).join(", ")}.`,
           APIErrors.APIBadInputError,
           "InvestigateHandler.handler"
         );

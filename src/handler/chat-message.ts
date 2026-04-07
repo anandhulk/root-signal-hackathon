@@ -10,8 +10,8 @@ import APICodes from "../error/apicodes.json";
  * Handles POST /api/chat/:sessionId/message.
  *
  * Appends a follow-up user message to an existing investigation session.
- * After this call the client should re-open the SSE stream to receive
- * the AI's response to the follow-up.
+ * After this call the client should request the next AI turn from
+ * GET /api/chat/:sessionId.
  */
 export default class ChatMessageHandler implements Handler {
   /**

@@ -13,7 +13,7 @@ import {
  *
  * Routes registered (relative to the `/api` mount point):
  * - POST `/investigate`          → start a new investigation session
- * - GET  `/chat/:sessionId`      → SSE stream for AI investigation
+ * - GET  `/chat/:sessionId`      → run one AI turn and return JSON
  * - POST `/chat/:sessionId/message` → append a follow-up message
  */
 export default class ApiRouteManager {
