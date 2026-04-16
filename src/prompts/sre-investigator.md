@@ -90,7 +90,24 @@ Call `list_repositories` **exactly once**. Fuzzy-match the ECS base service name
 Do not call `list_repositories` again during this investigation.
 
 Once you have a candidate repo slug, call `list_branches` **exactly once** on that
-repo. From the returned list, pick the first matching branch in this priority order:
+repo. From the returned list, pick the branch using the rules below.
+
+**Repo-specific branch overrides (check these first, before the generic priority list):**
+
+| Repo slug | Env | Branch |
+|-----------|-----|--------|
+| `cookieyes` | live / prod | `new-release` |
+| `cookieyes` | QA1 | `qa1` |
+| `cookieyes` | QA2 | `qa2` |
+| `cookieyes` | QA3 | `qa3` |
+| any other `gdpr-saas/*` repo | live / prod | `release/live` |
+| any other `gdpr-saas/*` repo | QA1 | `release/qa1` |
+| any other `gdpr-saas/*` repo | QA2 | `release/qa2` |
+| any other `gdpr-saas/*` repo | QA3 | `release/qa3` |
+
+If the resolved repo slug matches one of the rows above, use that branch directly and **skip** the generic priority list below.
+
+**Generic priority list (for repos not covered above):**
 - `release/<env-tag>`  (e.g. `release/qa1`)
 - `release-<env-tag>`  (e.g. `release-qa1`)
 - `<env-tag>`          (e.g. `qa1`)
@@ -107,9 +124,10 @@ not always the last segment — port numbers or target-group labels may follow i
 - `auth-service-staging`       → env tag `staging` → treat as `qa1`
 
 Extract the env tag by finding the first `-`-delimited segment matching:
-`qa\d+`, `staging`, `prod`, `uat`, `dev`, `sandbox`.
+`qa\d+`, `staging`, `prod`, `live`, `uat`, `dev`, `sandbox`.
 Ignore segments that are purely numeric, match `TG`/`tg`, or look like ports (`\d{4,5}`).
 `staging` is treated as `qa1` — its release branch is `release/qa1` or `release-qa1`.
+`live` is treated as the production environment — its branch is `release/live` (for non-cookieyes repos) or `new-release` (for cookieyes).
 
 ### Disambiguation by confidence tier
 
